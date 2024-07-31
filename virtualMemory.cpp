@@ -11,7 +11,7 @@ The goal of this project was to write a program that translates
 logical address to physical address for a virtual address space
 of 2^16 (65,536) bytes. We read in the file containing logical
 addresses, using a TLB (translation look-aside buffer) as well
-as a page table, and translated each logical address to its
+as a page table, and translate each logical address to its
 corresponding physical address and output the value of the byte
 stored at the translated physical address. Then print out these
 values and ratios (page fault rate and TLB rate).
@@ -24,23 +24,23 @@ g++ -o VirtualMemory VirtualMemory.cpp
 ifstream backStore;
 ifstream addressFile;
 
-#define LINELENGTH 10
+#define LINELENGTH 10 //defines the maximum length of a line read from the address file.
 
 #define PAGESIZE 256
 vector<int> pageTable(PAGESIZE, -1);
-vector<int> pageFrame(PAGESIZE, -1);
+vector<int> pageFrame(PAGESIZE, -1); // RAM
 
 #define TLB_LENGTH 16
 vector<int> TLBPage(TLB_LENGTH, -1);
 vector<int> TLBFrame(TLB_LENGTH, -1);
-int TLBNum = 0;
-int TLBCounter = 0;
+int TLBNum = 0; //keeps track of the number of TLB hits
+int TLBCounter = 0; //keeps track of the number of TLB accesses for replacement purposes
 
 #define FRAMELENGTH 256
-vector<char> readBacker(FRAMELENGTH, 0);
+vector<char> readBacker(FRAMELENGTH, 0); //vector used to read data from the backing store
 
 #define physicalMemoryBytes 65536 //2^16
-vector<int> physicalMemory(physicalMemoryBytes, 0);
+vector<int> physicalMemory(physicalMemoryBytes, 0); // vector representing the simulated physical memory, initialized to 0
 int pageFault = 0;
 
 
@@ -49,18 +49,26 @@ readBacker array. We then get the available frame and go through
 the entire page size (256) and insert the info into the physical
 memory array. Next we insert the frame into the page table and
 increase the page faults. Finally we return the frame we used. */
-int readBackStore(int page) {
+
+int readBackStore(int page)
+//Reads a page from the backing store and loads it into physical memory.
+{
     int availableFrame = 0;
 
     /* SEEK_SET is in fseek() - it seeks from the beginning of the file */
     backStore.seekg(page * PAGESIZE, ios::beg);
-    if (!backStore.read(&readBacker[0], PAGESIZE)) {
+
+    if (!backStore.read(&readBacker[0], PAGESIZE))
+    //reading pagesize bytes in read backer, essentially, reading from secondary memory to populate the main memory
+    {
         cerr << "ERROR reading from backStore" << endl;
     }
 
     /* Get available frame by looking for unused index in pageFrame */
-    for (int i = 0; i < PAGESIZE; i++) {
-        if (pageFrame[i] == -1) {
+    for (int i = 0; i < PAGESIZE; i++)
+    {
+        if (pageFrame[i] == -1)
+        {
             pageFrame[i] = 0;
             availableFrame = i;
             break;
@@ -86,6 +94,7 @@ the page from the page frame and saves the available frame to be used
 to get info from the backstore into the physical memory array (this is
 a page fault). Then the info is inserted into the TLB page and TLB frame.
 We then return the physical memory address. */
+
 int changeAddress(int logAddress) {
     int page = logAddress / PAGESIZE;
     double offsetDub = fmod(static_cast<double>(logAddress), static_cast<double>(PAGESIZE));
