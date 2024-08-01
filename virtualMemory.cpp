@@ -70,14 +70,15 @@ int readBackStore(int page)
         if (pageFrame[i] == -1)
         {
             pageFrame[i] = 0;
-            availableFrame = i;
+            availableFrame = i; //frame number
             break;
         }
     }
 
     /* Start at specific index for each frame */
     int startFrameIndex = PAGESIZE * availableFrame;
-    for (int j = 0; j < PAGESIZE; j++) {
+    for (int j = 0; j < PAGESIZE; j++)
+    {
         physicalMemory[startFrameIndex] = readBacker[j];
         startFrameIndex++;
     }
@@ -95,14 +96,18 @@ to get info from the backstore into the physical memory array (this is
 a page fault). Then the info is inserted into the TLB page and TLB frame.
 We then return the physical memory address. */
 
-int changeAddress(int logAddress) {
+int changeAddress(int logAddress)
+{
     int page = logAddress / PAGESIZE;
     double offsetDub = fmod(static_cast<double>(logAddress), static_cast<double>(PAGESIZE));
+    //fmod = floating point remainder
     int offset = static_cast<int>(offsetDub);
+    //translate thet floating point into int for offset
     int frameNum = -1;
 
     /* check if page is in TLB frame */
-    for (int i = 0; i < TLB_LENGTH; i++) {
+    for (int i = 0; i < TLB_LENGTH; i++)
+    {
         if (TLBPage[i] == page) {
             frameNum = TLBFrame[i];
             TLBNum++;
