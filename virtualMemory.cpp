@@ -44,18 +44,18 @@ vector<int> physicalMemory(physicalMemoryBytes, 0); // vector representing the s
 int pageFault = 0;
 
 
-/* Receives the page and reads from the BACK_STORE file and into the
-readBacker array. We then get the available frame and go through
-the entire page size (256) and insert the info into the physical
-memory array. Next we insert the frame into the page table and
-increase the page faults. Finally we return the frame we used. */
+// Receives the page and reads from the BACK_STORE file and into the
+// readBacker array. We then get the available frame and go through
+// the entire page size (256) and insert the info into the physical
+// memory array. Next we insert the frame into the page table and
+// increase the page faults. Finally we return the frame we used.
 
 int readBackStore(int page)
 //Reads a page from the backing store and loads it into physical memory.
 {
     int availableFrame = 0;
 
-    /* SEEK_SET is in fseek() - it seeks from the beginning of the file */
+    // SEEK_SET is in fseek() - it seeks from the beginning of the file
     backStore.seekg(page * PAGESIZE, ios::beg);
 
     if (!backStore.read(&readBacker[0], PAGESIZE))
@@ -64,7 +64,7 @@ int readBackStore(int page)
         cerr << "ERROR reading from backStore" << endl;
     }
 
-    /* Get available frame by looking for unused index in pageFrame */
+    // Get available frame by looking for unused index in pageFrame
     for (int i = 0; i < PAGESIZE; i++)
     {
         if (pageFrame[i] == -1)
@@ -75,7 +75,7 @@ int readBackStore(int page)
         }
     }
 
-    /* Start at specific index for each frame */
+    // start at specific index for each frame
     int startFrameIndex = PAGESIZE * availableFrame;
     for (int j = 0; j < PAGESIZE; j++)
     {
@@ -105,7 +105,7 @@ int changeAddress(int logAddress)
     //translate thet floating point into int for offset
     int frameNum = -1;
 
-    /* check if page is in TLB frame */
+    // check if page is in TLB frame
     for (int i = 0; i < TLB_LENGTH; i++)
     {
         if (TLBPage[i] == page) {
@@ -115,17 +115,22 @@ int changeAddress(int logAddress)
         }
     }
 
-    /* if page was not in TLB, read from BACK_STORE, or
-    get page from pageTable */
-    if (frameNum == -1) {
-        /* if not in either, page fault */
-        if (pageTable[page] == -1) {
+    // if page was not in TLB, read from BACK_STORE, or get page from pageTable
+    if (frameNum == -1) //not in TLB
+    {
+        // if not in either, page fault
+        if (pageTable[page] == -1)  //not in pagetable
+        {
             frameNum = readBackStore(page);
-        } else {
-            /* if not in TLB frame, get from pageTable */
+        }
+
+        else
+        {
+            // if not in TLB frame, get from pageTable
             frameNum = pageTable[page];
         }
 
+        //insert in TLB
         TLBPage[TLBCounter % TLB_LENGTH] = page;
         TLBFrame[TLBCounter % TLB_LENGTH] = frameNum;
         TLBCounter++;
@@ -134,21 +139,25 @@ int changeAddress(int logAddress)
     return (frameNum * PAGESIZE) + offset;
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
         cerr << "Please enter two arguments.\nEx: ./file addresses.txt" << endl;
         return -1;
     }
 
     /* Open Files */
-    backStore.open("BACKING_STORE.bin", ios::in | ios::binary);
-    if (!backStore) {
+    backStore.open("BACKING_STORE.bin", ios::in | ios::binary); //open in binary format
+    if (!backStore)
+    {
         cerr << "Error opening BACKING_STORE.bin" << endl;
         return -1;
     }
 
-    addressFile.open(argv[1], ios::in);
-    if (!addressFile) {
+    addressFile.open(argv[1], ios::in); //ios::in is read only access
+    if (!addressFile)
+    {
         cerr << "Error opening address file" << endl;
         return -1;
     }
@@ -159,7 +168,8 @@ int main(int argc, char *argv[]) {
 
     /* Go through each line of address file and pass logical address
     to Change address, which will translate the info to a physical address */
-    while (getline(addressFile, line)) {
+    while (getline(addressFile, line))
+    {
         int logAddress = stoi(line);
         int address = changeAddress(logAddress);
 
